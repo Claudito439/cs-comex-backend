@@ -1,0 +1,96 @@
+# ================================
+# Node.js Gitignore
+# ================================
+
+# Dependencias
+/node_modules
+/.pnp
+.pnp.js
+
+# Entorno
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+logs/
+
+# IDE/Editor
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Testing
+/coverage
+.nyc_output
+
+# Build/Compilación
+/dist
+/build
+.out
+.next
+.nuxt
+
+# TypeScript
+*.tsbuildinfo
+
+# Paquetes
+*.tgz
+
+# Misceláneos
+jspm_packages/
+/.cache
+/.serverless
+/.fusebox
+/dynamodb_local
+.history
+.lock
+.vercel
+.output
+
+# Archivos de configuración local
+/config/local.yml
+/config/*.local.*
+
+# Archivos de sesión/debug
+*.pid
+*.seed
+*.pid.lock
+
+# Archivos de base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de desarrollo local
+.tmp
+.temp
+
+# Certificados SSL
+*.pem
+*.key
+*.crt
+*.csr
+
+# Archivos de Docker
+docker-compose.override.yml
+
+# Archivos de usuario
+.elasticbeanstalk
+.quasar
