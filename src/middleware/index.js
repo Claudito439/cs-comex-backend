@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Middleware de rate limiting
 export const createRateLimiter = (windowMs = 15 * 60 * 1000, max = 100) => {
@@ -69,7 +71,11 @@ export const setupMiddlewares = (app) => {
       origin:
         process.env.NODE_ENV === 'production'
           ? ['https://cs-comex.vercel.app']
-          : ['http://localhost:9000', 'http://localhost:9001'],
+          : [
+              'http://localhost:9000',
+              'http://localhost:9001',
+              'https://cs-comex.vercel.app',
+            ],
       credentials: true,
     })
   );
