@@ -70,7 +70,7 @@ export const setupMiddlewares = (app) => {
     cors({
       origin:
         process.env.NODE_ENV === 'production'
-          ? ['https://cs-comex.vercel.app']
+          ? ['*']
           : ['http://localhost:9000', 'http://localhost:9001'],
       credentials: true,
     })
