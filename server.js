@@ -1,91 +1,55 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import router from './src/route/index.js';
 import cors from 'cors';
-
-// Cargar variables de entorno
 dotenv.config();
-
-// Importar configuraciones
+import router from './src/route/index.js';
 import connectDB from './src/config/database.js';
 import { errorHandler, notFound } from './src/middleware/index.js';
 
-// Crear aplicación Express
 const app = express();
 
-// Conectar a la base de datos
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'https://cs-comex.vercel.app',
+      'http://localhost:9000',
+      'http://localhost:9001',
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 connectDB();
 
-// Configurar middlewares
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? ['https://cs-comex.vercel.app']
-        : [
-            'http://localhost:9000',
-            'http://localhost:9001',
-            'https://cs-comex.vercel.app',
-          ],
-    credentials: true,
-  })
-);
-app.use(express.json());
-
-// Ruta de prueba
 app.get('/', (req, res) => {
   res.json({
-    message: 'API E-commerce funcionando correctamente',
-    version: '1.0.0',
+    message: 'API CS-Comex funcionando correctamente',
     environment: process.env.NODE_ENV,
   });
 });
 
-// Ruta de salud
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
-
-// Rutas de la API
 app.use('/api', router);
 
-// Aquí irán las rutas de la API
-// import authRoutes from './routes/auth.js';
-// import userRoutes from './routes/users.js';
-// import productRoutes from './routes/products.js';
-// import orderRoutes from './routes/orders.js';
-// import cartRoutes from './routes/cart.js';
-
-// app.use('/api/auth', authRoutes);
-// app.use('/api/users', authenticate, userRoutes);
-// app.use('/api/products', productRoutes);
-// app.use('/api/orders', authenticate, orderRoutes);
-// app.use('/api/cart', authenticate, cartRoutes);
-
-// Middleware para rutas no encontradas
 app.use(notFound);
-
-// Middleware de manejo de errores (debe ir al final)
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
-  console.log(
-    `Servidor ejecutándose en puerto ${PORT} en modo ${process.env.NODE_ENV}`
-  );
-});
-
-// Manejo de promesas no capturadas
-process.on('unhandledRejection', (err, promise) => {
-  console.log('Error no capturado:', err.message);
-  server.close(() => {
-    process.exit(1);
-  });
+app.listen(PORT, () => {
+  console.log(`Servidor en puerto ${PORT}`);
 });
 
 export default app;
