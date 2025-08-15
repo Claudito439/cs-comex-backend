@@ -328,6 +328,62 @@ class AuthController {
       });
     }
   }
+  // Agregar este método al AuthController existente
+
+  // Enviar formulario de contacto
+  async sendContact(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Datos de entrada inválidos',
+          details: errors.array(),
+        });
+      }
+
+      const {
+        firstName,
+        lastName,
+        email,
+        phone,
+        subject,
+        message,
+        timestamp,
+        source,
+      } = req.body;
+
+      // Validar datos requeridos
+      if (!firstName || !lastName || !email || !subject || !message) {
+        return res.status(400).json({
+          success: false,
+          error: 'Faltan campos requeridos',
+        });
+      }
+
+      const result = await authService.sendContact({
+        firstName,
+        lastName,
+        email,
+        phone,
+        subject,
+        message,
+        timestamp,
+        source,
+      });
+
+      res.json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      console.error('Error sending contact form:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
 }
 
 export default new AuthController();

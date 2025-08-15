@@ -68,7 +68,43 @@ const refreshTokenValidation = [
 ];
 
 // Rutas públicas
+// Agregar estas validaciones al archivo de rutas de auth
 
+// Validación para formulario de contacto
+const sendContactValidation = [
+  body('firstName')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('El nombre debe tener entre 2 y 50 caracteres'),
+  body('lastName')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('El apellido debe tener entre 2 y 50 caracteres'),
+  body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
+  body('phone')
+    .optional()
+    .isMobilePhone()
+    .withMessage('Número de teléfono inválido'),
+  body('subject')
+    .trim()
+    .isLength({ min: 5, max: 100 })
+    .withMessage('El asunto debe tener entre 5 y 100 caracteres'),
+  body('message')
+    .trim()
+    .isLength({ min: 10, max: 1000 })
+    .withMessage('El mensaje debe tener entre 10 y 1000 caracteres'),
+  body('timestamp')
+    .optional()
+    .isISO8601()
+    .withMessage('Formato de fecha inválido'),
+  body('source')
+    .optional()
+    .isLength({ max: 50 })
+    .withMessage('Origen demasiado largo'),
+];
+
+// Agregar esta ruta a las rutas públicas (antes de las rutas protegidas):
+router.post('/send-contact', sendContactValidation, authController.sendContact);
 // Proceso de registro en dos pasos
 router.post(
   '/initiate-registration',
