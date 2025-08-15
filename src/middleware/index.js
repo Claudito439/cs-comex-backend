@@ -66,6 +66,15 @@ export const setupMiddlewares = (app) => {
   app.use(helmet());
 
   // CORS
+  app.use(
+    cors({
+      origin:
+        process.env.NODE_ENV === 'production'
+          ? ['https://cs-comex.vercel.app']
+          : ['http://localhost:9000', 'http://localhost:9001'],
+      credentials: true,
+    })
+  );
 
   // Logging
   if (process.env.NODE_ENV === 'development') {
