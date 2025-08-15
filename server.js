@@ -9,22 +9,10 @@ import { errorHandler, notFound } from './src/middleware/index.js';
 const app = express();
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      'https://cs-comex.vercel.app',
-      'http://localhost:9000',
-      'http://localhost:9001',
-    ];
-
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('No permitido por CORS'));
-    }
-  },
+  origin: true, // ✅ Temporalmente permitir todo para debug
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
 app.use(cors(corsOptions));
