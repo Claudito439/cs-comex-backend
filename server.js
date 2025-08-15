@@ -1,23 +1,14 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import authRoute from './src/route/auth.route.js';
-import categoryRoute from './src/route/category.route.js';
-import productRoute from './src/route/product.route.js';
-import userRoute from './src/route/user.route.js';
-import cartRoute from './src/route/cart.route.js';
-import orderRoute from './src/route/order.route.js';
-import storageRoute from './src/route/StorageRoutes.js';
+import router from './src/route/index.js';
+import cors from 'cors';
 
 // Cargar variables de entorno
 dotenv.config();
 
 // Importar configuraciones
 import connectDB from './src/config/database.js';
-import {
-  setupMiddlewares,
-  errorHandler,
-  notFound,
-} from './src/middleware/index.js';
+import { errorHandler, notFound } from './src/middleware/index.js';
 
 // Crear aplicación Express
 const app = express();
@@ -26,7 +17,20 @@ const app = express();
 connectDB();
 
 // Configurar middlewares
-setupMiddlewares(app);
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? ['https://cs-comex.vercel.app']
+        : [
+            'http://localhost:9000',
+            'http://localhost:9001',
+            'https://cs-comex.vercel.app',
+          ],
+    credentials: true,
+  })
+);
+app.use(express.json());
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -47,13 +51,7 @@ app.get('/health', (req, res) => {
 });
 
 // Rutas de la API
-app.use('/api/auth', authRoute);
-app.use('/api/category', categoryRoute);
-app.use('/api/product', productRoute);
-app.use('/api/user', userRoute);
-app.use('/api/cart', cartRoute);
-app.use('/api/order', orderRoute);
-app.use('/api/storage', storageRoute);
+app.use('/api', router);
 
 // Aquí irán las rutas de la API
 // import authRoutes from './routes/auth.js';

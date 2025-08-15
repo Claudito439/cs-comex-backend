@@ -62,30 +62,10 @@ export const notFound = (req, res, next) => {
 
 // Configurar todos los middlewares
 export const setupMiddlewares = (app) => {
-  const corsOptions = {
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        'https://cs-comex.vercel.app',
-        'http://localhost:9000',
-        'http://localhost:9001',
-      ]; // Agrega aquí los orígenes permitidos
-
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        // Si el origen está en la lista o no hay origen (permitido para solicitudes locales sin origen)
-        callback(null, true);
-      } else {
-        callback(new Error('No permitido por CORS'));
-      }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
-    allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
-    credentials: true, // Habilita el uso de cookies y credenciales
-  };
   // Seguridad
   app.use(helmet());
 
   // CORS
-  app.use(cors(corsOptions));
 
   // Logging
   if (process.env.NODE_ENV === 'development') {
