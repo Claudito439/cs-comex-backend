@@ -68,10 +68,7 @@ export const setupMiddlewares = (app) => {
   // CORS
   app.use(
     cors({
-      origin:
-        process.env.NODE_ENV === 'production'
-          ? ['*']
-          : ['http://localhost:9000', 'http://localhost:9001'],
+      origin: true,
       credentials: true,
     })
   );
