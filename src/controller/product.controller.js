@@ -2,7 +2,6 @@ import productService from '../service/product.service.js';
 import { validationResult } from 'express-validator';
 
 class ProductController {
-  // Obtener todos los productos
   async getAllProducts(req, res) {
     try {
       const {
@@ -41,7 +40,6 @@ class ProductController {
     }
   }
 
-  // Obtener producto por ID
   async getProductById(req, res) {
     try {
       const { productId } = req.params;
@@ -60,7 +58,6 @@ class ProductController {
     }
   }
 
-  // Crear producto
   async createProduct(req, res) {
     try {
       const errors = validationResult(req);
@@ -87,7 +84,6 @@ class ProductController {
     }
   }
 
-  // Actualizar producto
   async updateProduct(req, res) {
     try {
       const errors = validationResult(req);
@@ -116,7 +112,6 @@ class ProductController {
     }
   }
 
-  // Eliminar producto
   async deleteProduct(req, res) {
     try {
       const { productId } = req.params;
@@ -135,7 +130,6 @@ class ProductController {
     }
   }
 
-  // Buscar productos
   async searchProducts(req, res) {
     try {
       const {
@@ -179,7 +173,6 @@ class ProductController {
     }
   }
 
-  // Obtener productos por categoría
   async getProductsByCategory(req, res) {
     try {
       const { categoryId } = req.params;
@@ -203,7 +196,6 @@ class ProductController {
     }
   }
 
-  // Actualizar stock
   async updateStock(req, res) {
     try {
       const errors = validationResult(req);

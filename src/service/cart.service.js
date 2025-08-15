@@ -1,7 +1,6 @@
 import { Cart, Product } from '../models/index.js';
 
 class CartService {
-  // Obtener carrito del usuario
   async getUserCart(userId) {
     try {
       let cart = await Cart.findOne({ user: userId }).populate(
@@ -10,7 +9,6 @@ class CartService {
       );
 
       if (!cart) {
-        // Crear carrito vacío si no existe
         cart = await Cart.create({
           user: userId,
           items: [],
@@ -18,12 +16,9 @@ class CartService {
         });
       }
 
-      // Filtrar productos inactivos o eliminados
       cart.items = cart.items.filter(
         (item) => item.product && item.product.isActive
       );
-
-      // Recalcular total si se filtraron items
       if (cart.items.length !== cart.items.length) {
         await cart.save();
       }
@@ -34,21 +29,16 @@ class CartService {
     }
   }
 
-  // Agregar producto al carrito
   async addToCart(userId, productId, quantity = 1) {
     try {
-      // Verificar que el producto existe y está activo
       const product = await Product.findById(productId);
       if (!product || !product.isActive) {
         throw new Error('Producto no encontrado o no disponible');
       }
 
-      // Verificar stock disponible
       if (product.stock < quantity) {
         throw new Error(`Stock insuficiente. Disponible: ${product.stock}`);
       }
-
-      // Obtener o crear carrito
       let cart = await Cart.findOne({ user: userId });
       if (!cart) {
         cart = await Cart.create({
@@ -58,16 +48,13 @@ class CartService {
         });
       }
 
-      // Buscar si el producto ya está en el carrito
       const existingItemIndex = cart.items.findIndex(
         (item) => item.product.toString() === productId
       );
 
       if (existingItemIndex > -1) {
-        // Actualizar cantidad del producto existente
         const newQuantity = cart.items[existingItemIndex].quantity + quantity;
 
-        // Verificar stock para la nueva cantidad
         if (product.stock < newQuantity) {
           throw new Error(
             `Stock insuficiente. Disponible: ${product.stock}, en carrito: ${cart.items[existingItemIndex].quantity}`
@@ -75,9 +62,8 @@ class CartService {
         }
 
         cart.items[existingItemIndex].quantity = newQuantity;
-        cart.items[existingItemIndex].price = product.price; // Actualizar precio
+        cart.items[existingItemIndex].price = product.price;
       } else {
-        // Agregar nuevo producto al carrito
         cart.items.push({
           product: productId,
           quantity,
@@ -87,7 +73,6 @@ class CartService {
 
       await cart.save();
 
-      // Retornar carrito poblado
       await cart.populate('items.product', 'name price stock images isActive');
       return cart;
     } catch (error) {
@@ -95,14 +80,12 @@ class CartService {
     }
   }
 
-  // Actualizar cantidad de producto en carrito
   async updateCartItem(userId, productId, quantity) {
     try {
       if (quantity <= 0) {
         return await this.removeFromCart(userId, productId);
       }
 
-      // Verificar producto y stock
       const product = await Product.findById(productId);
       if (!product || !product.isActive) {
         throw new Error('Producto no encontrado o no disponible');
@@ -112,7 +95,6 @@ class CartService {
         throw new Error(`Stock insuficiente. Disponible: ${product.stock}`);
       }
 
-      // Actualizar carrito
       const cart = await Cart.findOne({ user: userId });
       if (!cart) {
         throw new Error('Carrito no encontrado');
@@ -127,7 +109,7 @@ class CartService {
       }
 
       cart.items[itemIndex].quantity = quantity;
-      cart.items[itemIndex].price = product.price; // Actualizar precio
+      cart.items[itemIndex].price = product.price;
 
       await cart.save();
       await cart.populate('items.product', 'name price stock images isActive');
@@ -137,7 +119,6 @@ class CartService {
     }
   }
 
-  // Remover producto del carrito
   async removeFromCart(userId, productId) {
     try {
       const cart = await Cart.findOne({ user: userId });
@@ -157,7 +138,6 @@ class CartService {
     }
   }
 
-  // Limpiar carrito
   async clearCart(userId) {
     try {
       const cart = await Cart.findOne({ user: userId });
@@ -175,7 +155,6 @@ class CartService {
     }
   }
 
-  // Validar carrito antes de checkout
   async validateCart(userId) {
     try {
       const cart = await Cart.findOne({ user: userId }).populate(
@@ -205,7 +184,6 @@ class CartService {
           continue;
         }
 
-        // Actualizar precio si cambió
         if (item.price !== item.product.price) {
           item.price = item.product.price;
         }
@@ -217,7 +195,6 @@ class CartService {
         throw new Error(validationErrors.join('; '));
       }
 
-      // Actualizar carrito si hubo cambios de precio
       cart.items = updatedItems;
       await cart.save();
 
@@ -227,11 +204,8 @@ class CartService {
     }
   }
 
-  // Aplicar descuento (funcionalidad adicional)
   async applyDiscount(userId, discountCode) {
     try {
-      // Aquí puedes implementar lógica de descuentos
-      // Por ahora retorna el carrito sin cambios
       const cart = await this.getUserCart(userId);
       return cart;
     } catch (error) {
@@ -239,7 +213,6 @@ class CartService {
     }
   }
 
-  // Obtener resumen del carrito
   async getCartSummary(userId) {
     try {
       const cart = await this.getUserCart(userId);
@@ -250,8 +223,8 @@ class CartService {
           0
         ),
         subtotal: cart.totalAmount,
-        tax: cart.totalAmount * 0.1, // 10% impuesto (configurable)
-        shipping: cart.totalAmount > 50 ? 0 : 10, // Envío gratis por compras > $50
+        tax: cart.totalAmount * 0.1,
+        shipping: cart.totalAmount > 50 ? 0 : 10,
         total: 0,
       };
 

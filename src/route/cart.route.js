@@ -4,7 +4,6 @@ import cartController from '../controller/cart.controller.js';
 import { authenticate } from '../middleware/auth.js';
 const router = express.Router();
 
-// Validaciones
 const addToCartValidation = [
   body('productId').isMongoId().withMessage('ID de producto inválido'),
   body('quantity')
@@ -24,18 +23,10 @@ const productIdValidation = [
   param('productId').isMongoId().withMessage('ID de producto inválido'),
 ];
 
-// Rutas del carrito (todas requieren autenticación)
-
-// Obtener carrito
 router.get('/', authenticate, cartController.getCart);
-
-// Obtener resumen del carrito
 router.get('/summary', authenticate, cartController.getCartSummary);
-
-// Validar carrito
 router.get('/validate', authenticate, cartController.validateCart);
 
-// Agregar producto al carrito
 router.post(
   '/add',
   authenticate,
@@ -43,7 +34,6 @@ router.post(
   cartController.addToCart
 );
 
-// Actualizar cantidad de producto
 router.put(
   '/item/:productId',
   authenticate,
@@ -51,7 +41,6 @@ router.put(
   cartController.updateCartItem
 );
 
-// Remover producto del carrito
 router.delete(
   '/item/:productId',
   authenticate,
@@ -59,10 +48,8 @@ router.delete(
   cartController.removeFromCart
 );
 
-// Limpiar carrito
 router.delete('/clear', authenticate, cartController.clearCart);
 
-// Aplicar descuento
 router.post(
   '/discount',
   authenticate,

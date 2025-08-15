@@ -1,7 +1,6 @@
 import { Category } from '../models/index.js';
 
 class CategoryService {
-  // Obtener todas las categorías
   async getAllCategories(includeInactive = false) {
     try {
       const query = includeInactive ? {} : { isActive: true };
@@ -14,7 +13,6 @@ class CategoryService {
     }
   }
 
-  // Obtener categoría por ID
   async getCategoryById(categoryId) {
     try {
       const category = await Category.findById(categoryId);
@@ -29,12 +27,9 @@ class CategoryService {
     }
   }
 
-  // Crear categoría
   async createCategory(categoryData) {
     try {
       const { name, description } = categoryData;
-
-      // Verificar si ya existe
       const existingCategory = await Category.findOne({
         name: { $regex: new RegExp(name, 'i') },
       });
@@ -54,12 +49,9 @@ class CategoryService {
     }
   }
 
-  // Actualizar categoría
   async updateCategory(categoryId, updateData) {
     try {
       const { name, description, isActive } = updateData;
-
-      // Si se está actualizando el nombre, verificar duplicados
       if (name) {
         const existingCategory = await Category.findOne({
           name: { $regex: new RegExp(name, 'i') },
@@ -87,7 +79,6 @@ class CategoryService {
     }
   }
 
-  // Eliminar categoría (soft delete)
   async deleteCategory(categoryId) {
     try {
       const category = await Category.findByIdAndUpdate(

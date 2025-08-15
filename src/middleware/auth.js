@@ -2,12 +2,10 @@ import jwt from 'jsonwebtoken';
 import { User, Session } from '../models/index.js';
 import encryptionService from '../utils/encryption.js';
 
-// Middleware para verificar JWT y sesión (mejorado)
 export const authenticate = async (req, res, next) => {
   try {
     let encryptedToken, sessionId;
 
-    // Obtener token del header Authorization
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer')
@@ -15,7 +13,6 @@ export const authenticate = async (req, res, next) => {
       encryptedToken = req.headers.authorization.split(' ')[1];
     }
 
-    // Obtener session ID del header o cookie
     sessionId = req.headers['x-session-id'] || req.cookies?.sessionId;
 
     if (!encryptedToken || !sessionId) {
@@ -26,7 +23,6 @@ export const authenticate = async (req, res, next) => {
     }
 
     try {
-      // Buscar sesión activa
       const session = await Session.findOne({
         token: sessionId,
         accessToken: encryptedToken,
@@ -41,9 +37,7 @@ export const authenticate = async (req, res, next) => {
         });
       }
 
-      // Desencriptar token
       const decryptedToken = encryptionService.decryptToken(encryptedToken);
-      // Verificar JWT
       const decoded = jwt.verify(decryptedToken, process.env.JWT_SECRET);
 
       if (decoded.type !== 'access') {
@@ -53,7 +47,6 @@ export const authenticate = async (req, res, next) => {
         });
       }
 
-      // Obtener usuario actual
       const user = await User.findById(decoded.id).select('-password');
 
       if (!user || !user.isActive) {
@@ -63,7 +56,6 @@ export const authenticate = async (req, res, next) => {
         });
       }
 
-      // Agregar usuario y sesión al request
       req.user = user;
       req.session = session;
       req.sessionId = sessionId;
@@ -83,7 +75,6 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-// Middleware para verificar roles específicos
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -104,7 +95,6 @@ export const authorize = (...roles) => {
   };
 };
 
-// Middleware para verificar que el usuario es propietario del recurso
 export const authorizeOwner = (resourceUserField = 'user') => {
   return (req, res, next) => {
     if (!req.user) {
@@ -114,12 +104,9 @@ export const authorizeOwner = (resourceUserField = 'user') => {
       });
     }
 
-    // Si es admin, permitir acceso
     if (req.user.role === 'admin') {
       return next();
     }
-
-    // Verificar que el usuario es propietario del recurso
     const resourceUserId =
       req.params.userId || req.body[resourceUserField] || req.query.userId;
 
@@ -137,7 +124,6 @@ export const authorizeOwner = (resourceUserField = 'user') => {
   };
 };
 
-// Middleware para verificar email verificado
 export const requireEmailVerified = (req, res, next) => {
   if (!req.user.emailVerified) {
     return res.status(403).json({

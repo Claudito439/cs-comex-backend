@@ -2,7 +2,6 @@ import cartService from '../service/cart.service.js';
 import { validationResult } from 'express-validator';
 
 class CartController {
-  // Obtener carrito del usuario
   async getCart(req, res) {
     try {
       const cart = await cartService.getUserCart(req.user._id);
@@ -19,7 +18,6 @@ class CartController {
     }
   }
 
-  // Agregar producto al carrito
   async addToCart(req, res) {
     try {
       const errors = validationResult(req);
@@ -52,7 +50,6 @@ class CartController {
     }
   }
 
-  // Actualizar cantidad de producto
   async updateCartItem(req, res) {
     try {
       const errors = validationResult(req);
@@ -86,7 +83,6 @@ class CartController {
     }
   }
 
-  // Remover producto del carrito
   async removeFromCart(req, res) {
     try {
       const { productId } = req.params;
@@ -106,7 +102,6 @@ class CartController {
     }
   }
 
-  // Limpiar carrito
   async clearCart(req, res) {
     try {
       const cart = await cartService.clearCart(req.user._id);
@@ -124,7 +119,6 @@ class CartController {
     }
   }
 
-  // Obtener resumen del carrito
   async getCartSummary(req, res) {
     try {
       const result = await cartService.getCartSummary(req.user._id);
@@ -140,8 +134,6 @@ class CartController {
       });
     }
   }
-
-  // Validar carrito
   async validateCart(req, res) {
     try {
       const cart = await cartService.validateCart(req.user._id);
@@ -158,8 +150,6 @@ class CartController {
       });
     }
   }
-
-  // Aplicar descuento
   async applyDiscount(req, res) {
     try {
       const { discountCode } = req.body;

@@ -5,7 +5,6 @@ import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Validaciones
 const categoryValidation = [
   body('name')
     .trim()
@@ -35,11 +34,9 @@ const updateCategoryValidation = [
     .withMessage('isActive debe ser booleano'),
 ];
 
-// Rutas públicas
 router.get('/', categoryController.getAllCategories);
 router.get('/:categoryId', categoryController.getCategoryById);
 
-// Rutas protegidas (solo admin)
 router.post(
   '/',
   authenticate,

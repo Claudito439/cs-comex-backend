@@ -1,9 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
-// ... (otros modelos permanecen igual)
-
-// Modelo de Sesión (ACTUALIZADO)
 const sessionSchema = new mongoose.Schema(
   {
     user: {
@@ -14,20 +11,20 @@ const sessionSchema = new mongoose.Schema(
     token: {
       type: String,
       required: true,
-      unique: true, // Este será el session ID
+      unique: true,
     },
     accessToken: {
       type: String,
-      required: true, // JWT access token encriptado
+      required: true,
     },
     refreshToken: {
       type: String,
-      required: true, // JWT refresh token encriptado
+      required: true,
     },
     expiresAt: {
       type: Date,
       required: true,
-      index: { expireAfterSeconds: 0 }, // MongoDB eliminará automáticamente
+      index: { expireAfterSeconds: 0 },
     },
     isActive: {
       type: Boolean,
@@ -45,7 +42,6 @@ const sessionSchema = new mongoose.Schema(
   }
 );
 
-// Hook para actualizar lastUsedAt cuando se accede a la sesión
 sessionSchema.methods.updateLastUsed = function () {
   this.lastUsedAt = new Date();
   return this.save();

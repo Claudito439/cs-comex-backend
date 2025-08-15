@@ -2,7 +2,6 @@ import orderService from '../service/order.service.js';
 import { validationResult } from 'express-validator';
 
 class OrderController {
-  // Crear orden desde carrito
   async createOrder(req, res) {
     try {
       const errors = validationResult(req);
@@ -35,7 +34,6 @@ class OrderController {
     }
   }
 
-  // Obtener órdenes del usuario
   async getUserOrders(req, res) {
     try {
       const { page = 1, limit = 10, status } = req.query;
@@ -59,7 +57,6 @@ class OrderController {
     }
   }
 
-  // Obtener orden específica del usuario
   async getUserOrder(req, res) {
     try {
       const { orderId } = req.params;
@@ -78,7 +75,6 @@ class OrderController {
     }
   }
 
-  // Cancelar orden
   async cancelOrder(req, res) {
     try {
       const { orderId } = req.params;
@@ -103,9 +99,6 @@ class OrderController {
     }
   }
 
-  // ===== RUTAS PARA ADMIN =====
-
-  // Obtener todas las órdenes (admin)
   async getAllOrders(req, res) {
     try {
       const {
@@ -146,7 +139,6 @@ class OrderController {
     }
   }
 
-  // Obtener orden por ID (admin)
   async getOrderById(req, res) {
     try {
       const { orderId } = req.params;
@@ -165,7 +157,6 @@ class OrderController {
     }
   }
 
-  // Actualizar estado de orden (admin)
   async updateOrderStatus(req, res) {
     try {
       const errors = validationResult(req);
@@ -195,7 +186,6 @@ class OrderController {
     }
   }
 
-  // Buscar órdenes por número (admin)
   async searchOrders(req, res) {
     try {
       const { orderNumber } = req.query;
@@ -221,7 +211,6 @@ class OrderController {
     }
   }
 
-  // Obtener estadísticas de órdenes (admin)
   async getOrderStats(req, res) {
     try {
       const { startDate, endDate } = req.query;

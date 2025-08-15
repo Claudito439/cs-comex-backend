@@ -1,13 +1,11 @@
 import { Product, Category } from '../models/index.js';
 
 class ProductService {
-  // Obtener todos los productos con filtros
   async getAllProducts(page = 1, limit = 12, filters = {}) {
     try {
       const skip = (page - 1) * limit;
       const query = { isActive: true };
 
-      // Aplicar filtros
       if (filters.category) {
         query.category = filters.category;
       }
@@ -47,7 +45,6 @@ class ProductService {
     }
   }
 
-  // Obtener producto por ID
   async getProductById(productId) {
     try {
       const product = await Product.findById(productId).populate(
@@ -65,19 +62,15 @@ class ProductService {
     }
   }
 
-  // Crear producto
   async createProduct(productData) {
     try {
       const { name, description, price, stock, category, images, sku } =
         productData;
-
-      // Verificar que la categoría existe
       const categoryExists = await Category.findById(category);
       if (!categoryExists || !categoryExists.isActive) {
         throw new Error('Categoría no válida');
       }
 
-      // Verificar SKU único si se proporciona
       if (sku) {
         const existingSku = await Product.findOne({ sku });
         if (existingSku) {
@@ -102,7 +95,6 @@ class ProductService {
     }
   }
 
-  // Actualizar producto
   async updateProduct(productId, updateData) {
     try {
       const {
@@ -116,7 +108,6 @@ class ProductService {
         isActive,
       } = updateData;
 
-      // Verificar categoría si se está actualizando
       if (category) {
         const categoryExists = await Category.findById(category);
         if (!categoryExists || !categoryExists.isActive) {
@@ -124,7 +115,6 @@ class ProductService {
         }
       }
 
-      // Verificar SKU único si se está actualizando
       if (sku) {
         const existingSku = await Product.findOne({
           sku,
@@ -151,7 +141,6 @@ class ProductService {
     }
   }
 
-  // Eliminar producto (soft delete)
   async deleteProduct(productId) {
     try {
       const product = await Product.findByIdAndUpdate(
@@ -170,7 +159,6 @@ class ProductService {
     }
   }
 
-  // Buscar productos
   async searchProducts(searchTerm, page = 1, limit = 12, filters = {}) {
     try {
       const skip = (page - 1) * limit;
@@ -179,7 +167,6 @@ class ProductService {
         $text: { $search: searchTerm },
       };
 
-      // Aplicar filtros adicionales
       if (filters.category) {
         query.category = filters.category;
       }
@@ -213,7 +200,6 @@ class ProductService {
     }
   }
 
-  // Obtener productos por categoría
   async getProductsByCategory(categoryId, page = 1, limit = 12) {
     try {
       const skip = (page - 1) * limit;
@@ -250,7 +236,6 @@ class ProductService {
     }
   }
 
-  // Actualizar stock
   async updateStock(productId, quantity, operation = 'set') {
     try {
       const product = await Product.findById(productId);

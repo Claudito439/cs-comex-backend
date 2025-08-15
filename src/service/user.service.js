@@ -11,7 +11,6 @@ class UserService {
       throw new Error(`Error al crear usuario: ${error.message}`);
     }
   }
-  // Obtener todos los usuarios (solo admin)
   async getAllUsers(page = 1, limit = 10, filters = {}) {
     try {
       const skip = (page - 1) * limit;
@@ -41,7 +40,6 @@ class UserService {
     }
   }
 
-  // Obtener usuario por ID
   async getUserById(userId) {
     try {
       const user = await User.findById(userId).select('-password');
@@ -56,7 +54,6 @@ class UserService {
     }
   }
 
-  // Obtener perfil del usuario actual
   async getUserProfile(userId) {
     try {
       const user = await User.findById(userId).select('-password');
@@ -71,10 +68,8 @@ class UserService {
     }
   }
 
-  // Actualizar perfil de usuario
   async updateUserProfile(userId, updateData) {
     try {
-      // Campos que el usuario puede actualizar
       const allowedFields = ['name', 'phone', 'address'];
       const filteredData = {};
 
@@ -103,7 +98,6 @@ class UserService {
     }
   }
 
-  // Cambiar contraseña
   async changePassword(userId, currentPassword, newPassword) {
     try {
       const user = await User.findById(userId);
@@ -112,14 +106,12 @@ class UserService {
         throw new Error('Usuario no encontrado');
       }
 
-      // Verificar contraseña actual
       const isCurrentPasswordValid =
         await user.comparePassword(currentPassword);
       if (!isCurrentPasswordValid) {
         throw new Error('Contraseña actual incorrecta');
       }
 
-      // Actualizar contraseña
       user.password = newPassword;
       await user.save();
 
@@ -129,12 +121,9 @@ class UserService {
     }
   }
 
-  // Actualizar usuario (solo admin)
   async updateUser(userId, updateData, isAdmin = false) {
     try {
       let allowedFields = ['name', 'phone', 'address'];
-
-      // Admin puede actualizar campos adicionales
       if (isAdmin) {
         allowedFields = [...allowedFields, 'role', 'emailVerified', 'isActive'];
       }
@@ -165,7 +154,6 @@ class UserService {
     }
   }
 
-  // Desactivar usuario (soft delete)
   async deactivateUser(userId) {
     try {
       const user = await User.findByIdAndUpdate(
@@ -184,7 +172,6 @@ class UserService {
     }
   }
 
-  // Buscar usuarios por email o nombre
   async searchUsers(searchTerm, page = 1, limit = 10) {
     try {
       const skip = (page - 1) * limit;

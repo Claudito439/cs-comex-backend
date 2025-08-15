@@ -5,7 +5,6 @@ import createEmailTransporter from '../config/email.js';
 import encryptionService from '../utils/encryption.js';
 
 class AuthService {
-  // Generar JWT token
   generateToken(userId, type = 'access') {
     const payload = { id: userId, type };
     const expiresIn =
@@ -14,29 +13,25 @@ class AuthService {
     return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
   }
 
-  // Crear sesión con tokens encriptados
   async createSession(userId, userAgent, ipAddress) {
     try {
-      // Generar tokens
       const accessToken = this.generateToken(userId, 'access');
       const refreshToken = this.generateToken(userId, 'refresh');
 
-      // Encriptar tokens
       const encryptedAccessToken = encryptionService.encryptToken(accessToken);
       const encryptedRefreshToken =
         encryptionService.encryptToken(refreshToken);
 
-      // Generar session ID único
       const sessionId = encryptionService.generateSessionHash(
         `${userId}-${Date.now()}-${Math.random()}`
       );
 
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // 30 días
+      expiresAt.setDate(expiresAt.getDate() + 30);
 
       const session = await Session.create({
         user: userId,
-        token: sessionId, // Guardamos el session ID, no el JWT
+        token: sessionId,
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
         expiresAt,
@@ -56,16 +51,13 @@ class AuthService {
     }
   }
 
-  // Verificar email antes del registro
   async initiateRegistration(email) {
     try {
-      // Verificar si el usuario ya existe
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         throw new Error('El email ya está registrado');
       }
 
-      // Enviar código de verificación
       await this.sendVerificationCode(email, 'registration');
 
       return {
@@ -77,12 +69,9 @@ class AuthService {
     }
   }
 
-  // Registrar usuario (solo después de verificar email)
   async register(userData, verificationCode) {
     try {
       const { name, email, password, phone, address } = userData;
-
-      // Verificar código OTP
       const otp = await OTP.findOne({
         email,
         code: verificationCode,
@@ -95,24 +84,20 @@ class AuthService {
         throw new Error('Código de verificación inválido o expirado');
       }
 
-      // Verificar que no existe el usuario
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         throw new Error('El email ya está registrado');
       }
-
-      // Marcar código como usado
       otp.used = true;
       await otp.save();
 
-      // Crear usuario con email ya verificado
       const user = await User.create({
         name,
         email,
         password,
         phone,
         address,
-        emailVerified: true, // Ya verificado durante el registro
+        emailVerified: true,
       });
 
       return {
@@ -130,33 +115,25 @@ class AuthService {
     }
   }
 
-  // Iniciar sesión con sesión completa
   async login(email, password, userAgent, ipAddress) {
     try {
-      // Buscar usuario
       const user = await User.findOne({ email, isActive: true });
       if (!user) {
         throw new Error('Credenciales inválidas');
       }
 
-      // Verificar contraseña
       const isPasswordValid = await user.comparePassword(password);
       if (!isPasswordValid) {
         throw new Error('Credenciales inválidas');
       }
-
-      // Verificar email
       if (!user.emailVerified) {
         throw new Error('Debes verificar tu email antes de iniciar sesión');
       }
 
-      // Invalidar sesiones anteriores del usuario (opcional)
       await Session.updateMany(
         { user: user._id, isActive: true },
         { isActive: false }
       );
-
-      // Crear nueva sesión
       const sessionData = await this.createSession(
         user._id,
         userAgent,
@@ -181,10 +158,8 @@ class AuthService {
     }
   }
 
-  // Refresh token
   async refreshToken(encryptedRefreshToken, sessionId) {
     try {
-      // Buscar sesión activa
       const session = await Session.findOne({
         token: sessionId,
         isActive: true,
@@ -195,12 +170,9 @@ class AuthService {
         throw new Error('Sesión inválida o expirada');
       }
 
-      // Verificar que el refresh token coincide
       if (session.refreshToken !== encryptedRefreshToken) {
         throw new Error('Token de actualización inválido');
       }
-
-      // Desencriptar y verificar refresh token
       const decryptedRefreshToken = encryptionService.decryptToken(
         encryptedRefreshToken
       );
@@ -210,12 +182,10 @@ class AuthService {
         throw new Error('Tipo de token inválido');
       }
 
-      // Generar nuevo access token
       const newAccessToken = this.generateToken(session.user._id, 'access');
       const encryptedNewAccessToken =
         encryptionService.encryptToken(newAccessToken);
 
-      // Actualizar sesión
       session.accessToken = encryptedNewAccessToken;
       await session.save();
 
@@ -234,7 +204,6 @@ class AuthService {
     }
   }
 
-  // Cerrar sesión con session ID
   async logout(sessionId, encryptedAccessToken) {
     try {
       const session = await Session.findOneAndUpdate(
@@ -257,7 +226,6 @@ class AuthService {
     }
   }
 
-  // Cerrar todas las sesiones del usuario
   async logoutAllSessions(userId) {
     try {
       await Session.updateMany(
@@ -271,20 +239,16 @@ class AuthService {
     }
   }
 
-  // Enviar código de verificación (mejorado)
   async sendVerificationCode(email, type = 'email_verification') {
     try {
-      // Invalidar códigos anteriores del mismo tipo
       await OTP.updateMany({ email, type, used: false }, { used: true });
 
-      // Crear nuevo código
       const otp = await OTP.create({
         email,
         type,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       });
 
-      // Configurar mensaje según el tipo
       let subject, message;
       switch (type) {
         case 'registration':
@@ -304,7 +268,6 @@ class AuthService {
           message = 'Tu código de verificación es:';
       }
 
-      // Enviar email
       const transporter = createEmailTransporter();
 
       await transporter.sendMail({
@@ -330,7 +293,6 @@ class AuthService {
     }
   }
 
-  // Verificar email
   async verifyEmail(email, code) {
     try {
       const otp = await OTP.findOne({
@@ -345,11 +307,9 @@ class AuthService {
         throw new Error('Código inválido o expirado');
       }
 
-      // Marcar código como usado
       otp.used = true;
       await otp.save();
 
-      // Verificar usuario
       await User.findOneAndUpdate({ email }, { emailVerified: true });
 
       return { message: 'Email verificado exitosamente' };
@@ -358,12 +318,10 @@ class AuthService {
     }
   }
 
-  // Solicitar reset de contraseña
   async requestPasswordReset(email) {
     try {
       const user = await User.findOne({ email, isActive: true });
       if (!user) {
-        // Por seguridad, no revelar si el email existe
         return { message: 'Si el email existe, recibirás un código de reset' };
       }
 
@@ -375,7 +333,6 @@ class AuthService {
     }
   }
 
-  // Reset de contraseña
   async resetPassword(email, code, newPassword) {
     try {
       const otp = await OTP.findOne({
@@ -390,16 +347,11 @@ class AuthService {
         throw new Error('Código inválido o expirado');
       }
 
-      // Marcar código como usado
       otp.used = true;
       await otp.save();
-
-      // Actualizar contraseña
       const user = await User.findOne({ email });
       user.password = newPassword;
       await user.save();
-
-      // Invalidar todas las sesiones del usuario
       await Session.updateMany({ user: user._id }, { isActive: false });
 
       return { message: 'Contraseña actualizada exitosamente' };
@@ -408,7 +360,6 @@ class AuthService {
     }
   }
 
-  // Obtener sesiones activas del usuario
   async getUserActiveSessions(userId) {
     try {
       const sessions = await Session.find({
@@ -424,9 +375,7 @@ class AuthService {
       throw new Error(`Error al obtener sesiones: ${error.message}`);
     }
   }
-  // Agregar este método al AuthService existente
 
-  // Procesar formulario de contacto
   async sendContact(contactData) {
     try {
       const {
@@ -440,7 +389,6 @@ class AuthService {
         source,
       } = contactData;
 
-      // Crear mensaje de email para el administrador
       const adminEmailContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #1560a0, #0d47a1); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
@@ -511,7 +459,6 @@ class AuthService {
       </div>
     `;
 
-      // Mensaje de confirmación para el cliente
       const clientEmailContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #1560a0, #0d47a1); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
@@ -558,10 +505,8 @@ class AuthService {
       </div>
     `;
 
-      // Enviar emails
       const transporter = createEmailTransporter();
 
-      // Email al administrador
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: process.env.ADMIN_EMAIL || 'cscomexbolcontac@gmail.com',
@@ -570,16 +515,12 @@ class AuthService {
         replyTo: email,
       });
 
-      // Email de confirmación al cliente
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
         subject: 'Hemos recibido tu mensaje - CS COMEX',
         html: clientEmailContent,
       });
-
-      // Opcional: Guardar en base de datos para tracking
-      // Puedes crear un modelo ContactMessage para almacenar estos datos
 
       return {
         message: 'Mensaje enviado exitosamente. Te contactaremos pronto.',

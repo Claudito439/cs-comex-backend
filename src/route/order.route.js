@@ -5,7 +5,6 @@ import { authorize, authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Validaciones
 const createOrderValidation = [
   body('shippingAddress.street')
     .notEmpty()
@@ -64,9 +63,6 @@ const cancelOrderValidation = [
     .withMessage('Razón no puede exceder 200 caracteres'),
 ];
 
-// ===== RUTAS PARA USUARIOS =====
-
-// Crear nueva orden desde carrito
 router.post(
   '/',
   authenticate,
@@ -74,10 +70,8 @@ router.post(
   orderController.createOrder
 );
 
-// Obtener órdenes del usuario actual
 router.get('/my-orders', authenticate, orderController.getUserOrders);
 
-// Obtener orden específica del usuario
 router.get(
   '/my-orders/:orderId',
   authenticate,
@@ -85,7 +79,6 @@ router.get(
   orderController.getUserOrder
 );
 
-// Cancelar orden propia
 router.patch(
   '/my-orders/:orderId/cancel',
   authenticate,
@@ -93,12 +86,8 @@ router.patch(
   orderController.cancelOrder
 );
 
-// ===== RUTAS PARA ADMINISTRADORES =====
-
-// Obtener todas las órdenes
 router.get('/', authenticate, authorize('admin'), orderController.getAllOrders);
 
-// Buscar órdenes por número
 router.get(
   '/search',
   authenticate,
@@ -106,7 +95,6 @@ router.get(
   orderController.searchOrders
 );
 
-// Obtener estadísticas de órdenes
 router.get(
   '/stats',
   authenticate,
@@ -114,7 +102,6 @@ router.get(
   orderController.getOrderStats
 );
 
-// Obtener orden específica por ID
 router.get(
   '/:orderId',
   authenticate,
@@ -123,7 +110,6 @@ router.get(
   orderController.getOrderById
 );
 
-// Actualizar estado de orden
 router.patch(
   '/:orderId/status',
   authenticate,

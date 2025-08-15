@@ -5,7 +5,6 @@ import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Validaciones
 const productValidation = [
   body('name')
     .trim()
@@ -74,13 +73,11 @@ const updateStockValidation = [
     .withMessage('Operación debe ser: set, add o subtract'),
 ];
 
-// Rutas públicas
 router.get('/', productController.getAllProducts);
 router.get('/search', productController.searchProducts);
 router.get('/category/:categoryId', productController.getProductsByCategory);
 router.get('/:productId', productController.getProductById);
 
-// Rutas protegidas (solo admin)
 router.post(
   '/',
   authenticate,

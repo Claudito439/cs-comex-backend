@@ -2,7 +2,6 @@ import userService from '../service/user.service.js';
 import { validationResult } from 'express-validator';
 
 class UserController {
-  // Obtener todos los usuarios (solo admin)
   async createUser(req, res) {
     try {
       const errors = validationResult(req);
@@ -56,7 +55,6 @@ class UserController {
     }
   }
 
-  // Obtener usuario por ID
   async getUserById(req, res) {
     try {
       const { userId } = req.params;
@@ -74,7 +72,6 @@ class UserController {
     }
   }
 
-  // Obtener perfil del usuario actual
   async getProfile(req, res) {
     try {
       const user = await userService.getUserProfile(req.user._id);
@@ -91,7 +88,6 @@ class UserController {
     }
   }
 
-  // Actualizar perfil del usuario actual
   async updateProfile(req, res) {
     try {
       const user = await userService.updateUserProfile(req.user._id, req.body);
@@ -109,7 +105,6 @@ class UserController {
     }
   }
 
-  // Cambiar contraseña
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;

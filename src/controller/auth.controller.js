@@ -2,7 +2,6 @@ import authService from '../service/auth.service.js';
 import { validationResult } from 'express-validator';
 
 class AuthController {
-  // Iniciar proceso de registro
   async initiateRegistration(req, res) {
     try {
       const { email } = req.body;
@@ -19,8 +18,6 @@ class AuthController {
       });
     }
   }
-
-  // Registrar usuario (después de verificar email)
   async register(req, res) {
     try {
       const errors = validationResult(req);
@@ -48,7 +45,6 @@ class AuthController {
     }
   }
 
-  // Iniciar sesión
   async login(req, res) {
     try {
       const errors = validationResult(req);
@@ -98,7 +94,6 @@ class AuthController {
     }
   }
 
-  // Refresh token
   async refreshToken(req, res) {
     try {
       const errors = validationResult(req);
@@ -135,7 +130,6 @@ class AuthController {
     }
   }
 
-  // Cerrar sesión
   async logout(req, res) {
     try {
       const encryptedToken = req.headers.authorization?.split(' ')[1];
@@ -165,7 +159,6 @@ class AuthController {
     }
   }
 
-  // Cerrar todas las sesiones
   async logoutAllSessions(req, res) {
     try {
       const result = await authService.logoutAllSessions(req.user._id);
@@ -185,7 +178,6 @@ class AuthController {
     }
   }
 
-  // Enviar código de verificación
   async sendVerificationCode(req, res) {
     try {
       const errors = validationResult(req);
@@ -213,7 +205,6 @@ class AuthController {
     }
   }
 
-  // Verificar email
   async verifyEmail(req, res) {
     try {
       const errors = validationResult(req);
@@ -241,7 +232,6 @@ class AuthController {
     }
   }
 
-  // Solicitar reset de contraseña
   async requestPasswordReset(req, res) {
     try {
       const errors = validationResult(req);
@@ -269,7 +259,6 @@ class AuthController {
     }
   }
 
-  // Reset de contraseña
   async resetPassword(req, res) {
     try {
       const errors = validationResult(req);
@@ -297,7 +286,6 @@ class AuthController {
     }
   }
 
-  // Obtener usuario actual (ruta protegida)
   async getMe(req, res) {
     try {
       res.json({
@@ -312,7 +300,6 @@ class AuthController {
     }
   }
 
-  // Obtener sesiones activas
   async getActiveSessions(req, res) {
     try {
       const sessions = await authService.getUserActiveSessions(req.user._id);
@@ -328,9 +315,7 @@ class AuthController {
       });
     }
   }
-  // Agregar este método al AuthController existente
 
-  // Enviar formulario de contacto
   async sendContact(req, res) {
     try {
       const errors = validationResult(req);
@@ -352,8 +337,6 @@ class AuthController {
         timestamp,
         source,
       } = req.body;
-
-      // Validar datos requeridos
       if (!firstName || !lastName || !email || !subject || !message) {
         return res.status(400).json({
           success: false,

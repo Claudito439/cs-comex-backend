@@ -5,7 +5,6 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Validaciones
 const emailValidation = [
   body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
 ];
@@ -67,10 +66,6 @@ const refreshTokenValidation = [
   body('refreshToken').notEmpty().withMessage('Refresh token requerido'),
 ];
 
-// Rutas públicas
-// Agregar estas validaciones al archivo de rutas de auth
-
-// Validación para formulario de contacto
 const sendContactValidation = [
   body('firstName')
     .trim()
@@ -103,9 +98,7 @@ const sendContactValidation = [
     .withMessage('Origen demasiado largo'),
 ];
 
-// Agregar esta ruta a las rutas públicas (antes de las rutas protegidas):
 router.post('/send-contact', sendContactValidation, authController.sendContact);
-// Proceso de registro en dos pasos
 router.post(
   '/initiate-registration',
   initiateRegistrationValidation,
@@ -113,7 +106,6 @@ router.post(
 );
 router.post('/register', registerValidation, authController.register);
 
-// Autenticación
 router.post('/login', loginValidation, authController.login);
 router.post(
   '/refresh-token',
@@ -121,7 +113,6 @@ router.post(
   authController.refreshToken
 );
 
-// Verificación y recuperación
 router.post(
   '/send-verification-code',
   emailValidation,
@@ -139,7 +130,6 @@ router.post(
   authController.resetPassword
 );
 
-// Rutas protegidas
 router.post('/logout', authenticate, authController.logout);
 router.post(
   '/logout-all-sessions',

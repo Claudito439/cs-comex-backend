@@ -2,7 +2,6 @@ import categoryService from '../service/category.service.js';
 import { validationResult } from 'express-validator';
 
 class CategoryController {
-  // Obtener todas las categorías
   async getAllCategories(req, res) {
     try {
       const { includeInactive = false } = req.query;
@@ -22,8 +21,6 @@ class CategoryController {
       });
     }
   }
-
-  // Obtener categoría por ID
   async getCategoryById(req, res) {
     try {
       const { categoryId } = req.params;
@@ -42,7 +39,6 @@ class CategoryController {
     }
   }
 
-  // Crear categoría
   async createCategory(req, res) {
     try {
       const errors = validationResult(req);
@@ -69,7 +65,6 @@ class CategoryController {
     }
   }
 
-  // Actualizar categoría
   async updateCategory(req, res) {
     try {
       const errors = validationResult(req);
@@ -101,7 +96,6 @@ class CategoryController {
     }
   }
 
-  // Eliminar categoría
   async deleteCategory(req, res) {
     try {
       const { categoryId } = req.params;

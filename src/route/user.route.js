@@ -5,7 +5,6 @@ import { authenticate, authorize, authorizeOwner } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Validaciones
 const updateProfileValidation = [
   body('name')
     .optional()
@@ -61,12 +60,7 @@ const updateUserValidation = [
     .withMessage('isActive debe ser booleano'),
 ];
 
-// Rutas públicas (requieren autenticación básica)
-
-// Obtener perfil del usuario actual
 router.get('/profile', authenticate, userController.getProfile);
-
-// Actualizar perfil del usuario actual
 router.put(
   '/profile',
   authenticate,
@@ -74,7 +68,6 @@ router.put(
   userController.updateProfile
 );
 
-// Cambiar contraseña
 router.put(
   '/change-password',
   authenticate,
@@ -82,9 +75,6 @@ router.put(
   userController.changePassword
 );
 
-// Rutas con verificación de propiedad
-
-// Obtener usuario específico (propio o admin)
 router.get(
   '/:userId',
   authenticate,
@@ -92,7 +82,6 @@ router.get(
   userController.getUserById
 );
 
-// Actualizar usuario específico (propio o admin)
 router.put(
   '/:userId',
   authenticate,
@@ -101,15 +90,10 @@ router.put(
   userController.updateUser
 );
 
-// Rutas solo para administradores
-
-// Obtener todos los usuarios
 router.get('/', authenticate, authorize('admin'), userController.getAllUsers);
 
-// Crear usuario
 router.post('/', authenticate, authorize('admin'), userController.createUser);
 
-// Buscar usuarios
 router.get(
   '/search/users',
   authenticate,
@@ -117,7 +101,6 @@ router.get(
   userController.searchUsers
 );
 
-// Desactivar usuario
 router.delete(
   '/:userId',
   authenticate,

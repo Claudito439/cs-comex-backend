@@ -3,34 +3,28 @@ import cartService from './cart.service.js';
 import mongoose from 'mongoose';
 
 class OrderService {
-  // Crear orden desde el carrito
   async createOrderFromCart(
     userId,
     shippingAddress,
     paymentMethod = 'pending'
   ) {
     try {
-      // Validar carrito
       const cart = await cartService.validateCart(userId);
 
       if (!cart || cart.items.length === 0) {
         throw new Error('Carrito vacío');
       }
 
-      // Verificar usuario
       const user = await User.findById(userId);
       if (!user || !user.isActive) {
         throw new Error('Usuario no válido');
       }
-
-      // Preparar items de la orden
       const orderItems = [];
       let totalAmount = 0;
 
       for (const cartItem of cart.items) {
         const product = cartItem.product;
 
-        // Verificar stock una vez más (double-check)
         const currentProduct = await Product.findById(product._id);
         if (currentProduct.stock < cartItem.quantity) {
           throw new Error(`Stock insuficiente para ${product.name}`);
@@ -40,7 +34,7 @@ class OrderService {
 
         orderItems.push({
           product: product._id,
-          name: product.name, // Guardar nombre por si se elimina el producto
+          name: product.name,
           quantity: cartItem.quantity,
           unitPrice: cartItem.price,
           totalPrice: itemTotal,
@@ -49,7 +43,6 @@ class OrderService {
         totalAmount += itemTotal;
       }
 
-      // Crear orden
       const order = await Order.create({
         user: userId,
         items: orderItems,
@@ -58,10 +51,8 @@ class OrderService {
         status: 'pendiente',
       });
 
-      // Limpiar carrito después de crear la orden
       await cartService.clearCart(userId);
 
-      // Poblar la orden antes de retornar
       await order.populate('user', 'name email');
       await order.populate('items.product', 'name images');
 
@@ -71,7 +62,6 @@ class OrderService {
     }
   }
 
-  // Obtener órdenes del usuario
   async getUserOrders(userId, page = 1, limit = 10, status = null) {
     try {
       const skip = (page - 1) * limit;
@@ -105,12 +95,9 @@ class OrderService {
     }
   }
 
-  // Obtener orden por ID
   async getOrderById(orderId, userId = null) {
     try {
       const query = { _id: orderId };
-
-      // Si no es admin, filtrar por usuario
       if (userId) {
         query.user = userId;
       }
@@ -129,7 +116,6 @@ class OrderService {
     }
   }
 
-  // Actualizar estado de orden (solo admin)
   async updateOrderStatus(orderId, newStatus, userId = null) {
     try {
       const validStatuses = [
@@ -146,7 +132,6 @@ class OrderService {
 
       const query = { _id: orderId };
 
-      // Si no es admin, filtrar por usuario y solo permitir cancelación
       if (userId) {
         query.user = userId;
         if (newStatus !== 'cancelado') {
@@ -160,7 +145,6 @@ class OrderService {
         throw new Error('Orden no encontrada');
       }
 
-      // Validar transiciones de estado
       if (order.status === 'cancelado') {
         throw new Error('No se puede modificar una orden cancelada');
       }
@@ -169,14 +153,11 @@ class OrderService {
         throw new Error('No se puede modificar una orden entregada');
       }
 
-      // Manejo de transiciones de estado y actualización de stock
       const session = await mongoose.startSession();
       session.startTransaction();
 
       try {
-        // Si se está confirmando la orden (de pendiente a confirmado)
         if (order.status === 'pendiente' && newStatus === 'confirmado') {
-          // Reducir stock de los productos
           for (const item of order.items) {
             const product = await Product.findById(item.product).session(
               session
@@ -191,10 +172,7 @@ class OrderService {
             product.stock -= item.quantity;
             await product.save({ session });
           }
-        }
-        // Si se está cancelando una orden confirmada
-        else if (newStatus === 'cancelado' && order.status === 'confirmado') {
-          // Restaurar stock de los productos
+        } else if (newStatus === 'cancelado' && order.status === 'confirmado') {
           for (const item of order.items) {
             await Product.findByIdAndUpdate(
               item.product,
@@ -202,10 +180,7 @@ class OrderService {
               { session }
             );
           }
-        }
-        // Si se está cancelando una orden confirmada
-        else if (newStatus === 'pendiente' && order.status === 'confirmado') {
-          // Restaurar stock de los productos
+        } else if (newStatus === 'pendiente' && order.status === 'confirmado') {
           for (const item of order.items) {
             await Product.findByIdAndUpdate(
               item.product,
@@ -215,14 +190,12 @@ class OrderService {
           }
         }
 
-        // Actualizar estado de la orden
         order.status = newStatus;
         await order.save({ session });
 
         await session.commitTransaction();
         session.endSession();
 
-        // Poblar datos para la respuesta
         await order.populate('user', 'name email');
         await order.populate('items.product', 'name images');
 
@@ -236,13 +209,12 @@ class OrderService {
       throw new Error(`Error al actualizar orden: ${error.message}`);
     }
   }
-  // Obtener todas las órdenes (solo admin)
+
   async getAllOrders(page = 1, limit = 10, filters = {}) {
     try {
       const skip = (page - 1) * limit;
       const query = {};
 
-      // Aplicar filtros
       if (filters.status) {
         query.status = filters.status;
       }
@@ -285,7 +257,6 @@ class OrderService {
     }
   }
 
-  // Buscar órdenes por número
   async searchOrdersByNumber(orderNumber, userId = null) {
     try {
       const query = {
@@ -308,35 +279,28 @@ class OrderService {
     }
   }
 
-  // Obtener estadísticas de órdenes (solo admin)
-  // Obtener estadísticas de órdenes (solo admin) - CORREGIDO
   async getOrderStats(startDate = null, endDate = null) {
     try {
       const matchStage = {};
 
-      // Manejo correcto de las fechas para Bolivia (GMT-4)
       if (startDate || endDate) {
         matchStage.createdAt = {};
 
         if (startDate) {
-          // Parsear la fecha y crear en hora local de Bolivia
           const [year, month, day] = startDate.split('-').map(Number);
           const start = new Date(year, month - 1, day, 0, 0, 0, 0);
           matchStage.createdAt.$gte = start;
         }
 
         if (endDate) {
-          // Parsear la fecha y crear en hora local de Bolivia
           const [year, month, day] = endDate.split('-').map(Number);
           const end = new Date(year, month - 1, day, 23, 59, 59, 999);
           matchStage.createdAt.$lte = end;
         }
       }
 
-      // Verificar que hay órdenes con el filtro aplicado
       const testCount = await Order.countDocuments(matchStage);
 
-      // Estadísticas generales de todas las órdenes
       const allOrdersStats = await Order.aggregate([
         { $match: matchStage },
         {
@@ -349,7 +313,6 @@ class OrderService {
         },
       ]);
 
-      // Estadísticas de ventas confirmadas (confirmado, enviado, entregado)
       const confirmedSalesMatchStage = {
         ...matchStage,
         status: { $in: ['confirmado', 'enviado', 'entregado'] },
@@ -367,7 +330,6 @@ class OrderService {
         },
       ]);
 
-      // Estadísticas por estado
       const statusStats = await Order.aggregate([
         { $match: matchStage },
         {
@@ -379,7 +341,6 @@ class OrderService {
         },
       ]);
 
-      // Estadísticas adicionales útiles
       const additionalStats = await Order.aggregate([
         { $match: matchStage },
         {
@@ -413,7 +374,6 @@ class OrderService {
         },
       ]);
 
-      // Calcular tasa de conversión (órdenes entregadas vs total)
       const allStats = allOrdersStats[0] || {
         totalOrders: 0,
         totalRevenue: 0,
@@ -452,22 +412,17 @@ class OrderService {
 
       return {
         general: {
-          // Totales (incluye todas las órdenes)
           totalOrders: allStats.totalOrders,
           totalRevenue: allStats.totalRevenue || 0,
           averageOrderValue: allStats.averageOrderValue || 0,
-
-          // Ventas confirmadas (solo confirmado, enviado, entregado)
           confirmedOrders: confirmedStats.confirmedOrders || 0,
           confirmedRevenue: confirmedStats.confirmedRevenue || 0,
           confirmedAverageOrderValue:
             confirmedStats.confirmedAverageOrderValue || 0,
 
-          // Métricas de rendimiento
           conversionRate: parseFloat(conversionRate),
           cancellationRate: parseFloat(cancellationRate),
 
-          // Estadísticas por estado específico
           pendingOrders: additional.pendingOrders || 0,
           pendingRevenue: additional.pendingRevenue || 0,
           cancelledOrders: additional.cancelledOrders || 0,
@@ -477,9 +432,8 @@ class OrderService {
         },
         byStatus: statusStats || [],
 
-        // Resumen de ventas reales
         sales: {
-          totalSales: confirmedStats.confirmedRevenue || 0, // Solo ventas confirmadas
+          totalSales: confirmedStats.confirmedRevenue || 0,
           totalSalesOrders: confirmedStats.confirmedOrders || 0,
           averageSaleValue: confirmedStats.confirmedAverageOrderValue || 0,
           salesConversionRate: parseFloat(salesConversionRate),
@@ -490,7 +444,7 @@ class OrderService {
       throw new Error(`Error al obtener estadísticas: ${error.message}`);
     }
   }
-  // Cancelar orden
+
   async cancelOrder(orderId, userId, reason = '') {
     try {
       const order = await Order.findOne({
@@ -514,7 +468,6 @@ class OrderService {
         throw new Error('No se puede cancelar una orden que ya fue enviada');
       }
 
-      // Restaurar stock si la orden estaba confirmada
       if (order.status === 'confirmado') {
         for (const item of order.items) {
           await Product.findByIdAndUpdate(item.product, {

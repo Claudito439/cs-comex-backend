@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const productSchema = new Schema(
@@ -24,12 +24,12 @@ const productSchema = new Schema(
     },
     category: {
       type: Schema.Types.ObjectId,
-      ref: "Category",
+      ref: 'Category',
       required: true,
     },
     images: [
       {
-        type: Schema.Types.Mixed, // URLs, Base64, objetos con metadata, etc.
+        type: Schema.Types.Mixed,
       },
     ],
     isActive: {
@@ -48,6 +48,6 @@ const productSchema = new Schema(
 );
 
 // Índice para búsquedas de texto
-productSchema.index({ name: "text", description: "text" });
+productSchema.index({ name: 'text', description: 'text' });
 
-export const Product = mongoose.model("Product", productSchema);
+export const Product = mongoose.model('Product', productSchema);
