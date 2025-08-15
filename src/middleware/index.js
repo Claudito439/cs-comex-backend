@@ -69,9 +69,9 @@ export const setupMiddlewares = (app) => {
   app.use(
     cors({
       origin: [
+        'https://cs-comex.vercel.app',
         'http://localhost:9000',
         'http://localhost:9001',
-        'https://cs-comex.vercel.app',
       ],
       credentials: true,
     })
